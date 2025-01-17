@@ -1,0 +1,86 @@
+---
+title: "Problem Set-1"
+format: pdf
+editor: visual
+execute: 
+  warning: false
+  message: false
+---
+
+## \# (1) Sequential Estimation
+
+Derive the expression at the top of slide 18. Start with the
+
+\$\$ y = X1 \* \\hat\\beta_1 + X2 \* \\hat\\beta_2 + e \$\$
+
+and then pre-multiply it by M2, the residual-maker matrix with respect to X2. Hint: you will need to use your understanding of what happens when you project different variables onto X2 (via the M2 / P2 matrices). Also note that M2 \* M2 = M2.
+
+## \# (2) Demand Estimation
+
+Download \`demand_data.csv\` and load it into R. These data include sales and pricing information at aset of 100 ice-cream vendors over a 52 week period. All ice-cream flavors at a given store in a given week are always priced the same, so there is only one price value per vendor-week. However, different vendors charge different prices and most vendors vary their prices throughout the year.
+
+```{r}
+#Load demand data
+library(tidyverse)
+demand <- read.csv("data/demand_data.csv")
+```
+
+## **##Single vendor regressions**
+
+\(a\) For vendor 1, run a regression of sales on price as well as a regression of sales on price and a summer dummy. Make sure to select only the 52 weeks of data for vendor 1 when running the regression.Use the omitted variable bias formula to explain why the price coefficient changes when summer dummy is also included in the regression.
+
+```{r Vendor 1}
+#
+vendor1 <- demand %>%
+           filter(vendor_id == 1)
+vendor1_reg <- lm(sales~ price, data = vendor1)
+vendor1_reg_summer <-lm(sales~ price+summer_dummy, data = vendor1)
+summary(vendor1_reg)
+summary(vendor1_reg_summer)
+```
+
+\(b\) Repeat the two regressions from part (a), but now use data only for vendor 2. In the case of the multi-variate regression with the summer-dummy control, you should find that price or summer_dummy are reported with a coefficient value of NA. This means that R dropped the variable from the regression. Why does this happen?
+
+```{r Vendor 2}
+
+```
+
+\(c\) Repeat the two regressions from part (a), but now use data only for vendor 3. Vendor 3 is different from 1 and 2 in that she did not systematically charge higher or lower prices in summer. Is it still necessary to include the summer_dummy variable in order to avoid omitted variable bias? Are there other benefits from including the summer dummy in the regression?
+
+```{r Vendor 3}
+
+```
+
+## \# (3) Hospital admissions & quality of service
+
+Download \`health_data.csv\` and load it into R. These are data from hospital admissions for coronary artery bypass graft (CABG) in the UK. Among other things, you observe whether the patient passed away after the surgery (coded up as \`patient_died_dummy\`), which hospital the patient visited (\`hospital_id\`), and a series of patient characteristics such as gender and age.
+
+```{r Load hospital data}
+
+```
+
+## ##Dummy variables interpretation
+
+Start by regressing the patient-died dummy variable on a set of hospital dummies (Note: use the \`lm\` command and use the \`factor(var_name)\` syntax when including dummies).
+
+```{r Dummy regression}
+
+```
+
+\(a\) Based on the regression output, interpret the coefficients on the constant term and the dummy for hospital D.
+
+\(b\) What is the difference between the mortality rates at hospitals D and E (use the regression output to derive this)?
+
+## ##Long and short regressions
+
+Continue to use the hospital data in this question, but only use data for patients that visited either hospital A or B. Regress mortality on an intercept and a dummy for whether the patient visited hospital B. Also run the same regression, but include age (linearly) and gender as control variables
+
+```{r Long and short regression}
+
+```
+
+\(c\) Explain the difference between the coefficients in the long and short regressions based on the omitted variable bias formula
+
+\(d\) Assume that you want to capture "true" quality differences between hospitals in terms of mortality rates. Does the short regression over- and under-estimate quality differences between hospitals? Explain your reasoning.
+
+\(e\) Do you think the long regressions allows you to estimate "true" quality differences. Which additional control variables would you ideally like to include?
