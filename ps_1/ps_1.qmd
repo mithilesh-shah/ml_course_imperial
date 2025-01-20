@@ -11,13 +11,60 @@ execute:
 
 Derive the expression at the top of slide 18. Start with the
 
-\$\$ y = X1 \* \\hat\\beta_1 + X2 \* \\hat\\beta_2 + e \$\$
+$$\\y = X_1𝛃_1 + X_2 𝛃_2 + 𝛆 $$
 
 and then pre-multiply it by M2, the residual-maker matrix with respect to X2. Hint: you will need to use your understanding of what happens when you project different variables onto X2 (via the M2 / P2 matrices). Also note that M2 \* M2 = M2.
 
+\## Step-by-Step Derivation
+
+1.  \*\*Start with the Model\*\* $$\\y = X_1𝛃_1 + X_2 𝛃_2 + 𝛆 $$
+
+2.  \*\*Multiply Both Sides by $M_2$\*\*
+
+    Recall that\
+    $$\\M_2 = I-X_2(X_2^TX_2)^1X_2^T $$
+
+We get the following:
+
+$$
+M_2y = M_2X_1𝛃_1 + M_2X_2𝛃_2 + M_2𝛆 
+$$
+
+Since $$ M_2X_2=0 $$
+
+We get
+
+$$
+M_2y = M_2X_1𝛃_1 + M_2𝛆 
+$$
+
+3.  \*\*Multiply Both Sides by $X_1^T$\*\*
+
+    $$
+    X_1^T(M_2y) = X_1^T(M_2X_1𝛃_1) + X_1^T(M_2𝛆) 
+    $$
+
+    Since $$ M_2𝛆=0 $$
+
+    We get
+
+    $$
+    X_1^TM_2y = X_1^TM_2X_1𝛃_1  
+    $$
+
+    Now Solving for $𝛃_1$, we get
+
+    $$
+    𝛃_1=(X1_TM_2X_1)^-1 X_1^TM_2y
+    $$
+
+    Thus we get an expression for $𝛃_1$
+
+To get the equation on Slide 18, we could left multiply $M_2$ with $M_2^T$, since $M_2^TM_2=M_2$
+
 ## \# (2) Demand Estimation
 
-Download \`demand_data.csv\` and load it into R. These data include sales and pricing information at aset of 100 ice-cream vendors over a 52 week period. All ice-cream flavors at a given store in a given week are always priced the same, so there is only one price value per vendor-week. However, different vendors charge different prices and most vendors vary their prices throughout the year.
+Estimation \`demand_data.csv\` and load it into R. These data include sales and pricing information at aset of 100 ice-cream vendors over a 52 week period. All ice-cream flavors at a given store in a given week are always priced the same, so there is only one price value per vendor-week. However, different vendors charge different prices and most vendors vary their prices throughout the year.
 
 ```{r}
 #Load demand data
@@ -25,7 +72,7 @@ library(tidyverse)
 demand <- read.csv("data/demand_data.csv")
 ```
 
-## **##Single vendor regressions**
+### **##Single vendor regressions**
 
 \(a\) For vendor 1, run a regression of sales on price as well as a regression of sales on price and a summer dummy. Make sure to select only the 52 weeks of data for vendor 1 when running the regression.Use the omitted variable bias formula to explain why the price coefficient changes when summer dummy is also included in the regression.
 
@@ -42,14 +89,30 @@ summary(vendor1_reg_summer)
 \(b\) Repeat the two regressions from part (a), but now use data only for vendor 2. In the case of the multi-variate regression with the summer-dummy control, you should find that price or summer_dummy are reported with a coefficient value of NA. This means that R dropped the variable from the regression. Why does this happen?
 
 ```{r Vendor 2}
-
+vendor2 <- demand %>%
+           filter(vendor_id == 2)
+vendor2_reg <- lm(sales~ price, data = vendor2)
+vendor2_reg_summer <-lm(sales~ price+summer_dummy, data = vendor2)
+summary(vendor2_reg)
+summary(vendor2_reg_summer)
 ```
+
+Since price only takes two values---one during the summer and one outside of summer---the summer dummy variable is perfectly correlated with price. Whenever the summer dummy is 1, the price is always the same, and whenever the summer dummy is 0, the price is the other value. This situation creates **perfect collinearity**, which means the regression cannot distinguish the separate impacts of the summer dummy and price on sales.
+
+Because a regression model cannot estimate unique coefficients when two variables are perfectly collinear, R automatically drops one of them. In this case, it drops the summer dummy to ensure the model's parameters can still be estimated.
 
 \(c\) Repeat the two regressions from part (a), but now use data only for vendor 3. Vendor 3 is different from 1 and 2 in that she did not systematically charge higher or lower prices in summer. Is it still necessary to include the summer_dummy variable in order to avoid omitted variable bias? Are there other benefits from including the summer dummy in the regression?
 
 ```{r Vendor 3}
-
+vendor3 <- demand %>%
+           filter(vendor_id == 3)
+vendor3_reg <- lm(sales~ price, data = vendor3)
+vendor3_reg_summer <-lm(sales~ price+summer_dummy, data = vendor3)
+summary(vendor3_reg)
+summary(vendor3_reg_summer)
 ```
+
+Even if price does not systematically change with the season, sales might---due to changes in demand or other seasonal factors (e.g., more ice cream is sold in summer regardless of price). In that situation, including a summer dummy can still help the model by capturing the systematic seasonal fluctuation in sales. Doing so reduces the residual variance and thus allows us to estimate the price coefficient more precisely.
 
 ## \# (3) Hospital admissions & quality of service
 
