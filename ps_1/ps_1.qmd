@@ -1,5 +1,8 @@
 ---
-title: "Problem Set-1"
+title: "Machine Learning and Text Analysis"
+subtitle: "Problem Set-1"
+date: today
+authors: Bikash Panda and Mithilesh Shah
 format: pdf
 editor: visual
 execute: 
@@ -11,7 +14,7 @@ execute:
 
 Derive the expression at the top of slide 18. Start with the
 
-$$\\y = X_1𝛃_1 + X_2 𝛃_2 + 𝛆 $$
+$$\\y = X_1\hat{𝛃_1} + X_2 \hat(𝛃_2) + 𝛆 $$ {#eq-No1}
 
 and then pre-multiply it by M2, the residual-maker matrix with respect to X2. Hint: you will need to use your understanding of what happens when you project different variables onto X2 (via the M2 / P2 matrices). Also note that M2 \* M2 = M2.
 
