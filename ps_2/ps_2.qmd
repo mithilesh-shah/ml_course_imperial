@@ -1,21 +1,77 @@
 ---
-title: "ps_2"
-author: "Mithilesh Shah and Bikash Panda"
+title: "Machine Learning and Text Analysis"
+subtitle: "Problem Set-2"
+date: today
+authors: Bikash Panda and Mithilesh Shah
 format: html
 editor: visual
+execute: 
+  warning: false
+  message: false
 ---
 
-## Quarto
+## \# Analytical Derivations
+
+### \## 1. Bias-variance trade-off
+
+Derive the formula that decomposes expected MSE into three components on slide 12. Provide details for each step of the derivation (you will need to provide more detail than what is presented in the slides). Explain the three terms in the final expression in words (you might find it useful to use an example to explain when an estimator has high bias or high variance).
+
+## \# Measuring advertising impact
+
+### \## 1. Regression without controls
+
+Load the \`ad_experiment\` dataset. These data are based on an A/B test and hence treatment is randomly assigned. You can think of treatment as a consumer being exposed to an ad for a specific firm. You also have access to a large set of (binary) variables that capture different demographic features (such as age group, location, etc.). For simplicity these are anonymized and recorded as \`demographic_1\` to \`demographic_500\`.
+
+Regress revenue on treatment without further controls. Interpret the intercept and the treatment coefficient.
 
 ```{r}
-1 + 1
+library(tidyverse)
+
+ad_experiment <- read.csv("data/ad_experiment.csv")
+reg_1 <- lm(revenue~ treatment, data = ad_experiment)
+summary(reg_1)
 ```
 
-You can add options to executable code like this
+The treatment coefficient represents the mean difference in revenue between the treatment and control groups, while the intercept reflects the average revenue for the control group in the experiment.
+
+### \## 2. Including additional variables
+
+What is the impact (in expectations) of including additional variables on the treatment coefficient? What is the impact (in expectations) of including additional variables on the standard error of the treatment coefficient?
+
+NOTE: provide the answer using the appropriate formulas (I am expecting more than a verbal explanation).
+
+### \## 3. Predictors of treatment
+
+Regress treatment on the first 40 demographic variables (NOTE: it is probably easiest to generate a dataframe that contains only the relevant subset of variables). You will find one significant coefficient (at the 5% level) in this regression. Does this significant effect indicate a failure to randomize treatment? Why or why not? What would be better to way to assess randomization that does not focus on individual regression coefficients?
 
 ```{r}
-#| echo: false
-2 * 2
+control_vars <- ad_experiment %>%
+  select(matches("^demographic_")) %>% select(1:40)
+rand_check_data <-cbind(ad_experiment["treatment"],control_vars)
+rand_check <- lm(treatment~., data=rand_check_data)
+summary(rand_check)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+A single significant control variable does not necessarily imply a failure in randomization. In a regression with many variables, some may appear statistically significant purely by chance. Therefore, it is more appropriate to look at the overall balance when assessing randomization quality. One way to do this is by examining the F-statistic for the joint significance of all control variables. In our case, the F-test is not significant, indicating that none of the control variables, taken together, explain the treatment variable---suggesting that the randomization was indeed successful.
+
+### \## 5. Demographic controls
+
+Run a regression of revenue on treatment and all demographic variables (you can do so by using the syntax \`lm(revenue \~ ., data))\` where the period (\`.\`) tells R to use all variables contained in the data-frame.
+
+What happens to the standard errors of the various coefficients and the regression in general?
+
+### \## 6. Lasso with varying penality parameter
+
+Run a lasso regression (using the \`glmnet\` command;, we are not yet using \`cv.glmnet\` for cross-validated lasso). You need to first assign the outcome variable (Y) and create a matrix of X variables. In this case, you don't want to list out all variables, but instead assign the entire data-frame except for the first column (which contains the outcome variable) as the X matrix. The syntax for doing this is as follows: \`X \<- sparse.model.matrix(\~ ., ad_experiment\[-1\])\` (where the \`-1\` part excludes the first column). Run the Lasso without standardizing variables (because all X variables are binary variables). Plot the coefficients against the L1 norm to see how results behave when varying the penalty parameter.
+
+Which line in the graph (based on the results from the simple treatment regression above) corresponds to the treatment coefficient? What does the graph tell you about the impact of different demographics on revenue?
+
+### \## 7. Cross-validation
+
+Use \`cv.glmnet\` to run a cross-validated lasso regression (use the \`standardize = FALSE\` option as before). Plot out the relationship between lambda and the mean-squared error. Extract all non-zero variable names and the corresponding coefficient values.
+
+Explain the pattern shown in the graph. How many variables are selected by the cross-validated lasso?
+
+### \## 8. Run initial regression using lasso-selected controls
+
+Finally, generate a new dataset that contains only revenue, treatment, and the various demographic variables that were selected by the lasso regression. Run a (regular) regression of revenue on treatment and the selected dummies. Compare the standard error on the treatment coefficient in this regression to the one from the simple regression without controls. What difference do you find?

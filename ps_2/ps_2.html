@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-01-27">
+
+<title>Machine Learning and Text Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="ps_2_files/libs/clipboard/clipboard.min.js"></script>
+<script src="ps_2_files/libs/quarto-html/quarto.js"></script>
+<script src="ps_2_files/libs/quarto-html/popper.min.js"></script>
+<script src="ps_2_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="ps_2_files/libs/quarto-html/anchor.min.js"></script>
+<link href="ps_2_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="ps_2_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="ps_2_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="ps_2_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="ps_2_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Machine Learning and Text Analysis</h1>
+<p class="subtitle lead">Problem Set-2</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Bikash Panda and Mithilesh Shah </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 27, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="analytical-derivations" class="level2">
+<h2 class="anchored" data-anchor-id="analytical-derivations"># Analytical Derivations</h2>
+<section id="bias-variance-trade-off" class="level3">
+<h3 class="anchored" data-anchor-id="bias-variance-trade-off">## 1. Bias-variance trade-off</h3>
+<p>Derive the formula that decomposes expected MSE into three components on slide 12. Provide details for each step of the derivation (you will need to provide more detail than what is presented in the slides). Explain the three terms in the final expression in words (you might find it useful to use an example to explain when an estimator has high bias or high variance).</p>
+</section>
+</section>
+<section id="measuring-advertising-impact" class="level2">
+<h2 class="anchored" data-anchor-id="measuring-advertising-impact"># Measuring advertising impact</h2>
+<section id="regression-without-controls" class="level3">
+<h3 class="anchored" data-anchor-id="regression-without-controls">## 1. Regression without controls</h3>
+<p>Load the `ad_experiment` dataset. These data are based on an A/B test and hence treatment is randomly assigned. You can think of treatment as a consumer being exposed to an ad for a specific firm. You also have access to a large set of (binary) variables that capture different demographic features (such as age group, location, etc.). For simplicity these are anonymized and recorded as `demographic_1` to `demographic_500`.</p>
+<p>Regress revenue on treatment without further controls. Interpret the intercept and the treatment coefficient.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>ad_experiment <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/ad_experiment.csv"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>reg_1 <span class="ot">&lt;-</span> <span class="fu">lm</span>(revenue<span class="sc">~</span> treatment, <span class="at">data =</span> ad_experiment)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(reg_1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = revenue ~ treatment, data = ad_experiment)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-5.2088 -1.2635 -0.0326  1.2509  5.5512 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)   6.9154     0.1211  57.128   &lt;2e-16 ***
+treatment     0.3446     0.1766   1.952   0.0517 .  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 1.763 on 398 degrees of freedom
+Multiple R-squared:  0.009479,  Adjusted R-squared:  0.00699 
+F-statistic: 3.809 on 1 and 398 DF,  p-value: 0.05168</code></pre>
+</div>
+</div>
+<p>The treatment coefficient represents the mean difference in revenue between the treatment and control groups, while the intercept reflects the average revenue for the control group in the experiment.</p>
+</section>
+<section id="including-additional-variables" class="level3">
+<h3 class="anchored" data-anchor-id="including-additional-variables">## 2. Including additional variables</h3>
+<p>What is the impact (in expectations) of including additional variables on the treatment coefficient? What is the impact (in expectations) of including additional variables on the standard error of the treatment coefficient?</p>
+<p>NOTE: provide the answer using the appropriate formulas (I am expecting more than a verbal explanation).</p>
+</section>
+<section id="predictors-of-treatment" class="level3">
+<h3 class="anchored" data-anchor-id="predictors-of-treatment">## 3. Predictors of treatment</h3>
+<p>Regress treatment on the first 40 demographic variables (NOTE: it is probably easiest to generate a dataframe that contains only the relevant subset of variables). You will find one significant coefficient (at the 5% level) in this regression. Does this significant effect indicate a failure to randomize treatment? Why or why not? What would be better to way to assess randomization that does not focus on individual regression coefficients?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>control_vars <span class="ot">&lt;-</span> ad_experiment <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">matches</span>(<span class="st">"^demographic_"</span>)) <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">40</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>rand_check_data <span class="ot">&lt;-</span><span class="fu">cbind</span>(ad_experiment[<span class="st">"treatment"</span>],control_vars)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>rand_check <span class="ot">&lt;-</span> <span class="fu">lm</span>(treatment<span class="sc">~</span>., <span class="at">data=</span>rand_check_data)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(rand_check)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = treatment ~ ., data = rand_check_data)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-0.7705 -0.4355 -0.2109  0.4754  0.8109 
+
+Coefficients:
+                 Estimate Std. Error t value Pr(&gt;|t|)   
+(Intercept)     0.4917145  0.1792648   2.743  0.00639 **
+demographic_1  -0.0444755  0.0527464  -0.843  0.39968   
+demographic_2  -0.0755844  0.0530927  -1.424  0.15542   
+demographic_3  -0.0092441  0.0543001  -0.170  0.86492   
+demographic_4  -0.0105409  0.0531667  -0.198  0.84295   
+demographic_5  -0.0550984  0.0528037  -1.043  0.29744   
+demographic_6  -0.0536277  0.0536718  -0.999  0.31838   
+demographic_7  -0.0501113  0.0521474  -0.961  0.33722   
+demographic_8  -0.0185956  0.0532986  -0.349  0.72737   
+demographic_9  -0.0119517  0.0524442  -0.228  0.81986   
+demographic_10 -0.0469808  0.0535510  -0.877  0.38091   
+demographic_11  0.0620457  0.0533505   1.163  0.24561   
+demographic_12  0.1136791  0.0531639   2.138  0.03317 * 
+demographic_13  0.0561297  0.0534557   1.050  0.29441   
+demographic_14 -0.0714400  0.0536197  -1.332  0.18359   
+demographic_15  0.0009978  0.0534805   0.019  0.98512   
+demographic_16 -0.0640680  0.0526475  -1.217  0.22443   
+demographic_17  0.0275363  0.0530983   0.519  0.60437   
+demographic_18 -0.0506245  0.0530876  -0.954  0.34093   
+demographic_19  0.0215121  0.0540530   0.398  0.69088   
+demographic_20 -0.0157953  0.0535178  -0.295  0.76806   
+demographic_21  0.0235249  0.0540754   0.435  0.66380   
+demographic_22  0.0424157  0.0528649   0.802  0.42289   
+demographic_23 -0.0192024  0.0535649  -0.358  0.72019   
+demographic_24  0.0433808  0.0523083   0.829  0.40747   
+demographic_25  0.0234537  0.0532608   0.440  0.65994   
+demographic_26  0.0150711  0.0535332   0.282  0.77847   
+demographic_27 -0.0193671  0.0532265  -0.364  0.71617   
+demographic_28  0.0204876  0.0539765   0.380  0.70449   
+demographic_29  0.0157217  0.0545878   0.288  0.77351   
+demographic_30  0.0402525  0.0527464   0.763  0.44589   
+demographic_31  0.0233032  0.0525203   0.444  0.65753   
+demographic_32  0.0863759  0.0537494   1.607  0.10893   
+demographic_33 -0.0837444  0.0534486  -1.567  0.11804   
+demographic_34  0.0158689  0.0521646   0.304  0.76115   
+demographic_35  0.0260496  0.0532643   0.489  0.62510   
+demographic_36 -0.0519230  0.0532525  -0.975  0.33020   
+demographic_37  0.0236659  0.0528574   0.448  0.65462   
+demographic_38 -0.0674829  0.0534963  -1.261  0.20797   
+demographic_39  0.0913906  0.0534244   1.711  0.08801 . 
+demographic_40  0.0358004  0.0533987   0.670  0.50301   
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 0.5047 on 359 degrees of freedom
+Multiple R-squared:  0.0821,    Adjusted R-squared:  -0.02018 
+F-statistic: 0.8027 on 40 and 359 DF,  p-value: 0.7997</code></pre>
+</div>
+</div>
+<p>A single significant control variable does not necessarily imply a failure in randomization. In a regression with many variables, some may appear statistically significant purely by chance. Therefore, it is more appropriate to look at the overall balance when assessing randomization quality. One way to do this is by examining the F-statistic for the joint significance of all control variables. In our case, the F-test is not significant, indicating that none of the control variables, taken together, explain the treatment variable—suggesting that the randomization was indeed successful.</p>
+</section>
+<section id="demographic-controls" class="level3">
+<h3 class="anchored" data-anchor-id="demographic-controls">## 5. Demographic controls</h3>
+<p>Run a regression of revenue on treatment and all demographic variables (you can do so by using the syntax `lm(revenue ~ ., data))` where the period (`.`) tells R to use all variables contained in the data-frame.</p>
+<p>What happens to the standard errors of the various coefficients and the regression in general?</p>
+</section>
+<section id="lasso-with-varying-penality-parameter" class="level3">
+<h3 class="anchored" data-anchor-id="lasso-with-varying-penality-parameter">## 6. Lasso with varying penality parameter</h3>
+<p>Run a lasso regression (using the `glmnet` command;, we are not yet using `cv.glmnet` for cross-validated lasso). You need to first assign the outcome variable (Y) and create a matrix of X variables. In this case, you don’t want to list out all variables, but instead assign the entire data-frame except for the first column (which contains the outcome variable) as the X matrix. The syntax for doing this is as follows: `X &lt;- sparse.model.matrix(~ ., ad_experiment[-1])` (where the `-1` part excludes the first column). Run the Lasso without standardizing variables (because all X variables are binary variables). Plot the coefficients against the L1 norm to see how results behave when varying the penalty parameter.</p>
+<p>Which line in the graph (based on the results from the simple treatment regression above) corresponds to the treatment coefficient? What does the graph tell you about the impact of different demographics on revenue?</p>
+</section>
+<section id="cross-validation" class="level3">
+<h3 class="anchored" data-anchor-id="cross-validation">## 7. Cross-validation</h3>
+<p>Use `cv.glmnet` to run a cross-validated lasso regression (use the `standardize = FALSE` option as before). Plot out the relationship between lambda and the mean-squared error. Extract all non-zero variable names and the corresponding coefficient values.</p>
+<p>Explain the pattern shown in the graph. How many variables are selected by the cross-validated lasso?</p>
+</section>
+<section id="run-initial-regression-using-lasso-selected-controls" class="level3">
+<h3 class="anchored" data-anchor-id="run-initial-regression-using-lasso-selected-controls">## 8. Run initial regression using lasso-selected controls</h3>
+<p>Finally, generate a new dataset that contains only revenue, treatment, and the various demographic variables that were selected by the lasso regression. Run a (regular) regression of revenue on treatment and the selected dummies. Compare the standard error on the treatment coefficient in this regression to the one from the simple regression without controls. What difference do you find?</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
