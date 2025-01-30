@@ -1,8 +1,12 @@
 ---
-title: "Text Analysis Problem Set-1"
+title: "Text Analysis for SOcial Scientists and Leaders"
+subtitle: "Problem Set-1"
 authors: Ilayda, Mithilesh and Bikash
 format: pdf
 editor: visual
+execute: 
+  warning: false
+  message: false
 ---
 
 In Part 2 of the provided code, you learned how to build an ngram model to predict the price of different restaurants. You split your data in two. You trained a model to predict restaurant price in one half, and tested the model's accuracy in the other half. You also plotted the coefficients from the model. For the next three questions, complete the exact same workflow for one other quantity of interest. You are allowed to build a model to detect either gender (look for the "male" variable) or star rating (look for the "stars" variable). The choice is up to you!
@@ -10,6 +14,7 @@ In Part 2 of the provided code, you learned how to build an ngram model to predi
 ### 1. Produce a plot showing the frequencies and coefficients of the features in your model. Makesure it is easy to read!
 
 ```{r}
+#| echo: false
 #Load the relevant lib
 library(tidyverse) # useful for almost everything
 library(quanteda) # text analysis workhorse
@@ -18,7 +23,8 @@ library(ggrepel) # for plots
 library(glmnet) # Our estimation model
 library(pROC)  # binary prediction accuracy
 library(doc2concrete) # ngramTokens
-
+library(gtsummary)
+source("TASSL_dfm.R")
 
 ######### New data - restaurant reviews
 
@@ -29,28 +35,28 @@ review_dat<-readRDS("data/review_dat.RDS")
 businesses<-readRDS("data/businessset.RDS")
 # First thing - check variables
 
-names(review_dat)
+#names(review_dat)
 
-names(businesses)
+#names(businesses)
 
-businesses<-businesses %>%
+#businesses<-businesses %>%
   # remove the ones we don't need
-  filter(business_id%in%review_dat$business_id) %>%
+#  filter(business_id%in%review_dat$business_id) %>%
   # One variable name overlaps, so we rename one
-  rename(average_stars="stars") %>%
+#  rename(average_stars="stars") %>%
   # convert to numeric 
-  mutate(price=as.numeric(RestaurantsPriceRange2))
+#  mutate(price=as.numeric(RestaurantsPriceRange2))
 
 
-# We want to use reviews to predict price data, but price is in businesses, not review_dat
+# We want to use reviews to predict gender of the reviewer
 
 # To merge the business data into the review data, we use left_join()
 
-review_dat <- review_dat %>%
-  left_join(businesses,
-            by="business_id")
+#review_dat <- review_dat %>%
+# left_join(businesses,
+#            by="business_id")
 
-names(review_dat)
+#names(review_dat)
 
 # Calculate a 1-gram feature count matrix for the review data, with no dropped words
 dfm1<-TASSL_dfm(review_dat$text,
@@ -58,19 +64,19 @@ dfm1<-TASSL_dfm(review_dat$text,
               min.prop=0,
               stop.words = FALSE)
 
-dim(dfm1) # >10k ngrams! Too many
+#dim(dfm1) # >10k ngrams! Too many
 
 # most common words - obvious
-sort(colMeans(dfm1),decreasing=TRUE)[1:20]
+#sort(colMeans(dfm1),decreasing=TRUE)[1:20]
 
 # least common words
-sort(colMeans(dfm1))[1:20]
+#sort(colMeans(dfm1))[1:20]
 
-######## Ok, let's build a model to predict price!
+######## Ok, let's build a model to predict gender!
 
-# First, let's look at our price data
+# First, let's look at our gender distribution
 
-table(review_dat$price)
+#table(review_dat$male) #Female:1670 ; Male:1165
 
 # Let's only use 1-grams for now
 dfm3<-TASSL_dfm(review_dat$text,ngrams=1) %>%
@@ -78,29 +84,29 @@ dfm3<-TASSL_dfm(review_dat$text,ngrams=1) %>%
   select(-doc_id)
 
 # Lots of words
-dim(dfm3)
+#dim(dfm3)
 
 #  Most common words in 1- and 2-price reviews... lots of the same words!
-sort(colMeans(dfm3[review_dat$price==2,]),decreasing=T)[1:20]
+#sort(colMeans(dfm3[review_dat$male==0,]),decreasing=T)[1:20]
 
-sort(colMeans(dfm3[review_dat$price==1,]),decreasing=T)[1:20]
+#sort(colMeans(dfm3[review_dat$male==1,]),decreasing=T)[1:20]
 
-# What we really care about is - does the presence of a word predict price?
+# What we really care about is - does the presence of a word predict gender?
 
-# A simple start - correlate each word with star rating
+# A simple start - correlate each word with gender
 
-correlations<-dfm3 %>%
-  summarise_all(~round(cor(.,review_dat$price),3)) %>%
-  unlist()
+#correlations<-dfm3 %>%
+#  summarise_all(~round(cor(.,review_dat$male),3)) %>%
+#  unlist()
 
 # Ten lowest associations
-sort(correlations)[1:10]
+#sort(correlations)[1:10]
 
 # Ten highest associations
-rev(sort(correlations))[1:10]
+#rev(sort(correlations))[1:10]
 
 # note - same as:
-sort(correlations,decreasing=TRUE)[1:10]
+#sort(correlations,decreasing=TRUE)[1:10]
 
 # As we said in class we are not often interested in the effects of individual words
 # Instead, we care more about how all the words perform as a class
@@ -110,7 +116,7 @@ sort(correlations,decreasing=TRUE)[1:10]
 # First, we need to split the data into training and testing samples
 train_split=sample(1:nrow(review_dat),round(nrow(review_dat)/2))
 
-length(train_split)
+#length(train_split)
 
 # create our prediction variables
 dfm3<-TASSL_dfm(review_dat$text,ngrams=1) %>%
@@ -124,7 +130,7 @@ trainX<-dfm3 %>%
 
 trainY<-review_dat %>%
   slice(train_split) %>%
-  pull(price)
+  pull(male)
 
 testX<-dfm3 %>% 
   slice(-train_split) %>%
@@ -132,64 +138,63 @@ testX<-dfm3 %>%
 
 testY<-review_dat %>%
   slice(-train_split) %>%
-  pull(price)
+  pull(male)
 
 # Put training data into LASSO model (note - glmnet requires a matrix)
 
 lasso_model<-cv.glmnet(x=trainX,y=trainY)
 
 # let's plot the cross-validation curve to see if it's finding any signal
-plot(lasso_model)
+#plot(lasso_model)
 
 # generate predictions for test data
 test_predict<-predict(lasso_model,newx = testX)[,1]
 
 # Note that while the true answers are binary, the predictions are continuous
 # Always check these distributions!!
-hist(testY)
-hist(test_predict)
+#hist(testY)
+#hist(test_predict)
 
 # For now, let's just split the predictions in two, using the median
 
 test_predict_binary=ifelse(test_predict>median(test_predict),
-                           2,
-                           1)
-hist(test_predict_binary)
+                           1,
+                           0)
+#hist(test_predict_binary)
 
 # quick plot of the split to make sure it looks right
-plot(x=test_predict,y=test_predict_binary)
+#plot(x=test_predict,y=test_predict_binary)
 
 
 # This should have the same values as testY
-hist(test_predict_binary)
+#hist(test_predict_binary)
 
 # and we can calculate accuracy from that
 
-round(100*mean(test_predict_binary==testY),3)
 
 #### What is in the model? We can extract the coefficients
 
 # lots of zeros
-lasso_model %>%
-  coef() %>%
-  drop()
+#lasso_model %>%
+#  coef() %>%
+#  drop()
 
 # let's get this in a data frame
-lasso_model %>%
-  coef() %>%
-  drop() %>%
-  as.data.frame() %>%
-  rownames_to_column(var = "ngram") %>%
-  rename(score=".")
+#lasso_model %>%
+#  coef() %>%
+#  drop() %>%
+#  as.data.frame() %>%
+#  rownames_to_column(var = "ngram") %>%
+#  rename(score=".")
 
 # just the top
-lasso_model %>%
-  coef() %>%
-  drop() %>%
-  as.data.frame() %>%
-  rownames_to_column(var = "ngram") %>%
-  rename(score=".") %>%
-  head(20)
+#lasso_model %>%
+#  coef() %>%
+#  drop() %>%
+#  as.data.frame() %>%
+#  rownames_to_column(var = "ngram") %>%
+#  rename(score=".") %>%
+ # head(20)
 
 # drop zeros, and save
 plotCoefs<-lasso_model %>%
@@ -200,7 +205,7 @@ plotCoefs<-lasso_model %>%
   rename(score=".") %>%
   filter(score!=0 & ngram!="(Intercept)" & !is.na(score))  
 
-plotCoefs
+#plotCoefs
 
 # create a similar data frame with ngram frequencies
 plotFreqs<-data.frame(ngram=colnames(trainX),
@@ -212,12 +217,12 @@ plotDat<-plotCoefs %>%
   left_join(plotFreqs) %>%
   mutate_at(vars(score,freq),~round(.,3))
 
-head(plotDat)
+#head(plotDat)
 
 # here's our first plot, with minimal customization
-plotDat %>%
-  ggplot(aes(x=score,y=freq,label=ngram,color=score)) +
-  geom_point()
+#plotDat %>%
+#  ggplot(aes(x=score,y=freq,label=ngram,color=score)) +
+#  geom_point()
 
 # Problems:
 # Bad axis labels
@@ -225,13 +230,13 @@ plotDat %>%
 # I don't like the default grey background
 # legend is redundant
 
-plotDat %>%
-  ggplot(aes(x=score,y=freq,label=ngram,color=score)) +
-  geom_point() +
-  geom_label() +
-  theme_bw() +
-  labs(x="Coefficient in Model",y="Uses per Review")+
-  theme(legend.position = "none")
+#plotDat %>%
+#  ggplot(aes(x=score,y=freq,label=ngram,color=score)) +
+#  geom_point() +
+#  geom_label() +
+#  theme_bw() +
+#  labs(x="Coefficient in Model",y="Uses per Review")+
+#  theme(legend.position = "none")
 
 # More problems:
 # wasted space in Y axis
@@ -262,5 +267,29 @@ plotDat %>%
 # use darker colors
 
 
+```
 
+### 1. Report the percentage accuracy of the model you trained, using the held-out data, and write a few sentences interpreting the results. What features seemed to be the best predictors? How do you think you could improve the model?
+
+The model accuracy is 58.43%. The best predictor turns out to be whether reviewer mentions about his/her partner in the review. Therefore, if you mention your wife in your reviews, the review is more likely to written by the husband. We could improve this model by using bi-grams or a combination of n-grams.
+
+```{r}
+#| echo: false
+
+#round(100*mean(test_predict_binary==testY),3)
+
+cfm <- data.frame(test_predict_binary,testY)
+cfm$test_predict_binary <- factor(cfm$test_predict_binary, levels = c(0,1), labels = c("Female", "Male"))
+cfm$testY <- factor(cfm$testY, levels = c(0,1), labels = c("Female", "Male"))
+
+prediction_table <- cfm %>% 
+  tbl_cross(
+    row = testY,
+    col= test_predict_binary,
+    percent = "cell",
+    label = list(test_predict_binary ~ "Model Predictions",
+                 testY ~ "Actual Gender")
+  ) %>%
+  bold_labels()
+as_gt(prediction_table) %>% gt::as_latex()
 ```
