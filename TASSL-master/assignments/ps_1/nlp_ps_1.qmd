@@ -1,0 +1,26 @@
+---
+title: "nlp_ps_1"
+format: pdf
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+In Part 2 of the provided code, you learned how to build an ngram model to predict the price of different restaurants. You split your data in two. You trained a model to predict restaurant price in one half, and tested the model's accuracy in the other half. You also plotted the coefficients from the model. For the next three questions, complete the exact same workflow for one other quantity of interest. You are allowed to build a model to detect either gender (look for the "male" variable) or star rating (look for the "stars" variable). The choice is up to you!
+
+1\. Produce a plot showing the frequencies and coefficients of the features in your model. Makesure it is easy to read!
+
+```{r}
+
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
